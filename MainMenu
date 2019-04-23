@@ -1,0 +1,26 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class MainMenu : MonoBehaviour
+{
+    public void PlayGame ()
+    {
+        SceneManager.LoadScene("McCann_Michael_DIG3480_Challenge3");
+        GameController.standardGame = true;
+        GameController.timeAttack = false;
+    }
+
+    public void TimeAttack ()
+    {
+        SceneManager.LoadScene("McCann_Michael_DIG3480_Challenge3");
+        GameController.timeAttack = true;
+        GameController.standardGame = false;
+    }
+
+    public void QuitGame ()
+    {
+        Application.Quit();
+    }
+}

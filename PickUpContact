@@ -1,0 +1,50 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PickUpContact : MonoBehaviour
+{
+
+    public static bool powerUp;
+    public float powerTime;
+
+    void Start()
+    {
+        if (powerUp)
+        {
+            return;
+        }
+
+        else
+        {
+            powerUp = false;
+        }
+    }
+
+    void Update()
+    {
+        if (powerUp)
+        {
+            powerTime -= Time.deltaTime;
+        }
+
+        if (powerTime <= 0)
+        {
+            ReturnBool();
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Player")
+        {
+            powerUp = true;
+            Destroy(gameObject);
+        }
+    }
+
+    void ReturnBool()
+    {
+        powerUp = false;
+    }
+}

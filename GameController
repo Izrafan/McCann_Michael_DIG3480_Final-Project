@@ -1,0 +1,286 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
+using UnityEngine.UI;
+
+public class GameController : MonoBehaviour
+{
+    public GameObject[] hazards;
+
+    public GameObject[] powerUps;
+
+    public Vector3 spawnValues;
+
+    public int hazardCount;
+    public int powerupCount;
+
+    public float spawnWait;
+    public float startWait;
+    public float waveWait;
+
+    public float spawnWaitTime;
+    public float startWaitTime;
+    public float waveWaitTime;
+
+    public float spawnWaitPower;
+    public float startWaitPower;
+    public float waveWaitPower;
+
+    public Text scoreText;
+    public Text mainMenuText;
+    public Text gameOverText;
+    public Text winText;
+    public Text creatorText;
+    public Text restartTimeText;
+    public Text endgameText;
+    public Text timerText;
+
+    public AudioSource backgroundMusic;
+    public AudioClip loseTrack;
+    public AudioClip winTrack;
+
+    private bool gameOver;
+    private bool restart;
+    private bool mainMenu;
+    private bool endGame;
+
+    public static bool standardGame;
+    public static bool timeAttack;
+
+    public static bool win;
+
+    private int score;
+
+    private float timer;
+
+    void Start()
+    {
+        
+
+        if (standardGame)
+        {
+            gameOver = false;
+            restart = false;
+            win = false;
+            mainMenu = false;
+            endGame = false;
+
+            endgameText.text = "";
+            restartTimeText.text = "";
+            mainMenuText.text = "";
+            gameOverText.text = "";
+            winText.text = "";
+            creatorText.text = "";
+            timerText.text = "";
+
+            score = 0;
+            timer = 30;
+
+            UpdateScore();
+            StartCoroutine(SpawnWaves());
+            StartCoroutine(PowerUpLoop());
+        }
+
+        if (timeAttack)
+        {
+            gameOver = false;
+            restart = false;
+            win = false;
+            mainMenu = false;
+            endGame = false;
+
+            endgameText.text = "";
+            restartTimeText.text = "";
+            mainMenuText.text = "";
+            gameOverText.text = "";
+            winText.text = "";
+            creatorText.text = "";
+            timerText.text = "";
+
+            score = 0;
+            timer = 31;
+
+            UpdateScore();
+            CountDownTimer();
+            StartCoroutine(SpawnWaves());
+            StartCoroutine(PowerUpLoop());
+        }
+    }
+
+    void Update()
+    {
+        if (endGame)
+        {
+            if (Input.GetKeyDown(KeyCode.Q))
+            {
+                Application.Quit();
+            }
+        }
+
+        if (restart)
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+        }
+
+        if (mainMenu)
+        {
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                SceneManager.LoadScene("Main_Menu");
+            }
+        }
+
+        if (timeAttack)
+        {
+            CountDownTimer();
+        }
+    }
+
+    IEnumerator SpawnWaves()
+    {
+        if (standardGame)
+        {
+            yield return new WaitForSeconds(startWait);
+            while (true)
+            {
+                for (int i = 0; i < hazardCount; i++)
+                {
+                    GameObject hazard = hazards[Random.Range(0, hazards.Length)];
+                    Vector3 spawnPosition = new Vector3(Random.Range(-spawnValues.x, spawnValues.x), spawnValues.y, spawnValues.z);
+                    Quaternion spawnRotation = Quaternion.identity;
+                    Instantiate(hazard, spawnPosition, spawnRotation);
+                    yield return new WaitForSeconds(spawnWait);
+                }
+
+                yield return new WaitForSeconds(waveWait);
+
+                if (gameOver)
+                {
+                    mainMenuText.text = "Press 'P' to Play Again";
+                    restartTimeText.text = "Press 'M' for Main Menu";
+                    endgameText.text = "Press 'Q' to Quit";
+                    restart = true;
+                    mainMenu = true;
+                    endGame = true;
+                    PickUpContact.powerUp = false;
+                    break;
+                }
+            }
+        }
+
+        if (timeAttack)
+        {
+            yield return new WaitForSeconds(startWaitTime);
+            while (true)
+            {
+                for (int i = 0; i < hazardCount; i++)
+                {
+                    GameObject hazard = hazards[Random.Range(0, hazards.Length)];
+                    Vector3 spawnPosition = new Vector3(Random.Range(-spawnValues.x, spawnValues.x), spawnValues.y, spawnValues.z);
+                    Quaternion spawnRotation = Quaternion.identity;
+                    Instantiate(hazard, spawnPosition, spawnRotation);
+                    yield return new WaitForSeconds(spawnWaitTime);
+                }
+                yield return new WaitForSeconds(waveWaitTime);
+
+                if (gameOver)
+                {
+                    mainMenuText.text = "Press 'M' for Main Menu";
+                    restartTimeText.text = "Press 'P' to Play Again";
+                    endgameText.text = "Press 'Q' to Quit";
+                    restart = true;
+                    mainMenu = true;
+                    endGame = true;
+                    PickUpContact.powerUp = false;
+                    break;
+                }
+            }
+        }
+       
+    }
+
+    IEnumerator PowerUpLoop()
+    {
+        yield return new WaitForSeconds(startWaitPower);
+        while (true)
+        {
+            for (int j = 0; j < powerupCount; j++)
+            {
+                GameObject powerUp = powerUps[Random.Range(0, powerUps.Length)];
+                Vector3 spawnpositionPower = new Vector3(Random.Range(-spawnValues.x, spawnValues.x), spawnValues.y, spawnValues.z);
+                Quaternion spawnrotationPower = Quaternion.identity;
+                Instantiate(powerUp, spawnpositionPower, spawnrotationPower);
+                yield return new WaitForSeconds(spawnWaitPower);
+            }
+            yield return new WaitForSeconds(waveWaitPower);
+
+            if (gameOver)
+            {
+                break;
+            }
+        }
+    }
+
+    public void AddScore(int newScoreValue)
+    {
+        score += newScoreValue;
+        UpdateScore();
+    }
+
+    void UpdateScore()
+    {
+        scoreText.text = "Points: " + score;
+        if (score >= 100 && standardGame)
+        {
+            winText.text = "You Win!";
+            creatorText.text = "Created by West McCann";
+            gameOver = true;
+            win = true;
+            ChangeBGM(winTrack);
+        }
+    }
+
+    public void GameOver()
+    {
+        gameOverText.text = "Game Over!";
+        gameOver = true;
+        if (score < 100)
+        {
+            ChangeBGM(loseTrack);
+        }
+    }
+
+    public void ChangeBGM(AudioClip music)
+    {
+        if (music != backgroundMusic.clip)
+        {
+            backgroundMusic.Stop();
+            backgroundMusic.clip = music;
+            backgroundMusic.Play();
+        }
+    }
+
+    void CountDownTimer()
+    {
+        timer -= Time.deltaTime;
+        UpdateTimer();
+    }
+
+    void UpdateTimer()
+    {
+        timerText.text = "Time: " + Mathf.RoundToInt (timer);
+        if (timer <= 0)
+        {
+                winText.text = "Time's Up!";
+                creatorText.text = "Created by West McCann";
+                gameOver = true;
+                win = true;
+                ChangeBGM(winTrack);
+                timerText.text = "";
+        }
+    }
+
+}
